@@ -17,7 +17,7 @@ jobs:
         python-version: 3.7
 
     - name: Install dependencies
-      run: | 
+      run: |  
         # обновление pip
         python -m pip install --upgrade pip 
         # установка flake8 и его плагинов
@@ -26,6 +26,8 @@ jobs:
         pip install -r api_yamdb/requirements.txt 
 
     - name: Test with flake8 and django tests
+      env: 
+        SECRET_KEY: ${{ secrets.SECRET_KEY }}
       run: |
         # запуск проверки проекта по flake8
         python -m flake8
