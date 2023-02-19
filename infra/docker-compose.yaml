@@ -12,7 +12,7 @@ services:
 
 
   web:
-    image: theeasy/sprint16_project:latest
+    image: theeasy/sprint16_project:v1.0
     restart: always
     volumes:
       - static_value:/app/static/
