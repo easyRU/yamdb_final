@@ -6,6 +6,7 @@
 
 ### Ссылка на сайт
 [Админка проекта](http://firsteasy.sytes.net/admin/).
+
 [Редок](http://firsteasy.sytes.net/redoc/).
 
 ## **Шаблон наполнения env-файла**
@@ -18,43 +19,67 @@ DB_HOST= # название сервиса (контейнера)
 DB_PORT= # порт для подключения к БД 
 ```
 
-## **Как запустить проект**
+## Установка на удалённом сервере
+для Linux-систем все команды необходимо выполнять от имени администратора
+- Склонировать репозиторий
+```bash
+git clone https://github.com/easyRU/yamdb_final.git
+```
+- Выполнить вход на удаленный сервер
+- Установить docker на сервер:
+```bash
+apt install docker.io 
+```
+- Установить docker-compose на сервер:
+https://losst.pro/ustanovka-docker-compose-v-ubuntu-20-04
+```
+- Локально отредактировать файл infra/nginx.conf, в строке server_name вписать IP-адрес сервера
+- Скопировать файлы docker-compose.yml и nginx.conf из директории infra на сервер:
+```bash
+scp docker-compose.yml <username>@<host>:/home/<username>/docker-compose.yml
+scp nginx.conf <username>@<host>:/home/<username>/nginx.conf
+```
+- Создать .env файл по предлагаемому выше шаблону. Изменить значения POSTGRES_USER и POSTGRES_PASSWORD
+- Для работы с Workflow добавить в Secrets GitHub переменные окружения для работы:
+ * DOCKER_PASSWORD - пароль от DockerHub;
+* DOCKER_USERNAME - имя пользователя на DockerHub;
+* HOST - ip-адрес сервера;
+* DB_ENGINE=<django.db.backends.postgresql>
+* DB_NAME=<имя базы данных postgres>
+* DB_USER=<пользователь бд>
+* DB_PASSWORD=<пароль>
+* DB_HOST=<db>
+* DB_PORT=<5432>
+* SECRET_KEY=<секретный ключ проекта django>
+* USER=<username для подключения к серверу>
+* PASSPHRASE=<пароль для сервера, если он установлен>
+* SSH_KEY=<ваш SSH ключ (для получения команда: cat ~/.ssh/id_rsa)>
+* TELEGRAM_TO - id своего телеграм-аккаунта (можно узнать у @userinfobot, команда /start)
+* TELEGRAM_TOKEN - токен бота (получить токен можно у @BotFather, /token, имя бота)
 
-Клонировать репозиторий и перейти в него в командной строке:
-
+    ```
+    Workflow состоит из четырёх шагов:
+     - Проверка кода на соответствие PEP8
+     - Сборка и публикация образа бекенда на DockerHub.
+     - Автоматический деплой на удаленный сервер.
+     - Отправка уведомления в телеграм-чат.
+- собрать и запустить контейнеры на сервере:
+```bash
+docker-compose up -d --build
 ```
-https://github.com/easyRU/infra_sp2.git
-
-```
-cd api_yamdb
-```
-Для сборки и запуска контейнеров использовать команду:
-```
-docker-compose up
-```
-После запуска контейнеров,  чтобы создать миграций, суперпользователя и собрать статику, необходимо последовательно выполнить команды:
-```
-docker-compose exec web python manage.py migrate 
-docker-compose exec web python manage.py createsuperuser
-docker-compose exec web python manage.py collectstatic --no-input
-```
-Для остановки контейнеров нажать CTRL+C.
-
-
-## **Заполнение базы данных**
-Скопировать файл с данными для базы fixtures.json в контейнер infra_web:
-```
-docker cp fixtures.json CONTAINER_ID:/app
-```
-ID контейнера можно узнать выполнив команду:
-```
-docker container ls -a
-```
-Для заполнения базы данными выполнить команду:
-```
-docker-compose exec web python manage.py loaddata fixtures.json
-```
-База данных заполнена.
+- После успешной сборки выполнить следующие действия (только при первом деплое):
+    * провести миграции внутри контейнеров:
+    ```bash
+    docker-compose exec web python manage.py migrate
+    ```
+    * собрать статику проекта:
+    ```bash
+    docker-compose exec web python manage.py collectstatic --no-input
+    ```  
+    * Создать суперпользователя Django, после запроса от терминала ввести логин и пароль для суперпользователя:
+    ```bash
+    docker-compose exec web python manage.py createsuperuser
+    ```
 
 ## **Информация об авторе**
 Автор проекта: Куценко Татьяна
