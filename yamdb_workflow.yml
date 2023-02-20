@@ -1,8 +1,6 @@
 name: Django-app workflow
 
-on: 
-  push:
-    branches: [ master ]
+on: [push]
 
 
 jobs:
@@ -31,12 +29,12 @@ jobs:
       run: |
         # запуск проверки проекта по flake8
         python -m flake8
+        pytest tests/
         # перейти в папку, содержащую manage.py — 
         #<корневая_папка_infra_actions>/<папка_проекта>/manage.py
         cd api_yamdb/
         # запустить написанные разработчиком тесты
         python manage.py test
-
 
   build_and_push_to_docker_hub:
     name: Push Docker image to Docker Hub
@@ -58,7 +56,6 @@ jobs:
           context: api_yamdb
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/sprint16_project:latest
-
 
   deploy:
     runs-on: ubuntu-latest
@@ -83,7 +80,6 @@ jobs:
             echo DB_HOST=${{ secrets.DB_HOST }} >> .env
             echo DB_PORT=${{ secrets.DB_PORT }} >> .env
             sudo docker-compose up -d
-
 
   send_message:
     runs-on: ubuntu-latest
